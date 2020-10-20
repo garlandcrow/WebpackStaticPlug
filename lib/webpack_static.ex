@@ -93,14 +93,14 @@ defmodule WebpackStatic.Plug do
 
   defp serve_asset(
          conn = %Plug.Conn{
-           path_info: [uri, file_name],
+           path_info: [uri | path_parts],
            req_headers: req_headers
          },
          port,
          assets,
          manifest
        ) do
-    requested_path = "#{uri}/#{file_name}"
+    requested_path = "#{uri}/#{Enum.join(path_parts, "/")}"
 
     actual_path =
       case manifest do
@@ -119,6 +119,9 @@ defmodule WebpackStatic.Plug do
       |> hd
 
     if Enum.any?(assets, &(&1 == asset_type)) do
+      require Logger
+      Logger.warn(inspect(url, pretty: true))
+
       Http.get(
         url,
         stream_to: self(),
@@ -176,6 +179,14 @@ defmodule WebpackStatic.Plug do
       }
       when code >= 400 ->
         {:error, "Webpack responded with error code: #{code}"}
+
+      {:plug_conn, :sent} ->
+        {:ok, conn}
+
+      other ->
+        require Logger
+        Logger.warn("fucccccccck")
+        Logger.warn(inspect(other, pretty: true))
     after
       15_000 -> {:error, "Error fetching webpack resource: Timeout exceeded"}
     end
