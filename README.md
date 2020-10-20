@@ -1,38 +1,40 @@
-# WebpackStatic
-[![Build Status](https://travis-ci.org/jmartin84/WebpackStaticPlug.svg?branch=master)](https://travis-ci.org/jmartin84/WebpackStaticPlug)
+# SnowpackStatic
 
-  Phoenix plug to proxy a locally running instance of the webpack dev server.<br />
-  This plug will only serve assets when the env parameter has the value of `:dev`.<br />
-  Phoenix will be allowed a chance to resolve any assets not resolved by webpack.<br />
+Phoenix plug to proxy a locally running instance of the snowpack dev server.<br />
+This plug will only serve assets when the env parameter has the value of `:dev`.<br />
+Phoenix will be allowed a chance to resolve any assets not resolved by snowpack.<br />
 
 ## Installation
 
 ```elixir
 defp deps do
   [
-    {:WebpackStaticPlug, "~> 0.1.1"}
+    {:snowpack_static_plug, "~> 0.3.0"}
   ]
 end
 ```
 
 And run:
 
-  $ mix deps.get
+\$ mix deps.get
 
 ## Usage
-Add WebpackStatic.Plug as a plug in the phoenix project's endpoint.
+
+Add SnowpackStatic.Plug as a plug in the phoenix project's endpoint.
 
 ## Arguments
-* **port** - *(required)* The port that the webpack dev server is listening on.
-* **webpack_assets** - *(required)* a list of the paths in the static folder that webpack will for serve. The plug will ignore requests to any other path.
-* **env** - *(required)* the current environment the project is running under.
-* **manifest_path** - *(optional)* relative path that will resolve from the static folder of the webpack manifest file.
+
+- **port** - _(required)_ The port that the snowpack dev server is listening on.
+- **assets** - _(required)_ a list of the paths in the static folder that snowpack will for serve. The plug will ignore requests to any other path.
+- **env** - _(required)_ the current environment the project is running under.
 
 ## Example
+
 in `endpoint.ex`
 
 ```elixir
-  plug WebpackStatic.Plug,
-        port: 9000, webpack_assets: ~w(css fonts images js),
-        env: Mix.env, manifest_path: "/manifest.json"
+  plug SnowpackStatic.Plug,
+    port: 8080,
+    assets: ~w(public web_modules _dist_ __snowpack__),
+    env: Mix.env()
 ```

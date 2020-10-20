@@ -10,11 +10,11 @@ use Mix.Config
 
 # You can configure your application as:
 #
-#     config :webpack_static, key: :value
+#     config :snowpack_static, key: :value
 #
 # and access this configuration in your application as:
 #
-#     Application.get_env(:webpack_static, :key)
+#     Application.get_env(:snowpack_static, :key)
 #
 # You can also configure a 3rd-party app:
 #
