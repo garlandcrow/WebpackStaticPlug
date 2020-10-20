@@ -122,8 +122,8 @@ defmodule WebpackStatic.Plug do
       require Logger
       Logger.warn(inspect(url, pretty: true))
 
-      %Tesla.Env{body: body, headers: resp_headers, status: status} =
-        Tesla.get!(url, headers: req_headers)
+      # TODO: maybe put back headers: req_headers
+      %Tesla.Env{body: body, headers: resp_headers, status: status} = Tesla.get!(url)
 
       conn = %Plug.Conn{conn | resp_headers: resp_headers}
 
@@ -136,63 +136,4 @@ defmodule WebpackStatic.Plug do
   end
 
   defp serve_asset(conn = %Plug.Conn{}, _, _, _), do: conn
-
-  defp receive_response(conn) do
-    receive do
-      %HTTPotion.AsyncChunk{chunk: chunk} ->
-        require Logger
-        Logger.warn(inspect(chunk, pretty: true))
-
-        case Conn.chunk(conn, chunk) do
-          {:ok, conn} -> receive_response(conn)
-          {:error, reason} -> {:error, "Error fetching webpack resource: #{reason}"}
-        end
-
-      %HTTPotion.AsyncHeaders{status_code: status} when status == 404 ->
-        {:not_found, conn}
-
-      %HTTPotion.AsyncHeaders{
-        status_code: code,
-        headers: %HTTPotion.Headers{
-          hdrs: headers
-        }
-      }
-      when code < 400 ->
-        headers
-        |> Map.to_list()
-        |> Enum.reduce(conn, fn {key, value}, acc ->
-          require Logger
-          Logger.warn(inspect("#{key}: #{value}", pretty: true))
-
-          Conn.put_resp_header(acc, key, value)
-        end)
-        |> Conn.send_chunked(code)
-        |> receive_response()
-
-      %HTTPotion.AsyncEnd{} ->
-        require Logger
-        Logger.warn("closed")
-
-        {:ok, conn}
-
-      %HTTPotion.ErrorResponse{message: message} ->
-        {:error, "Error fetching webpack resource: #{message}"}
-
-      %HTTPotion.AsyncHeaders{
-        status_code: code
-      }
-      when code >= 400 ->
-        {:error, "Webpack responded with error code: #{code}"}
-
-      {:plug_conn, :sent} ->
-        {:ok, conn}
-
-      other ->
-        require Logger
-        Logger.warn("fucccccccck")
-        Logger.warn(inspect(other, pretty: true))
-    after
-      15_000 -> {:error, "Error fetching webpack resource: Timeout exceeded"}
-    end
-  end
 end
