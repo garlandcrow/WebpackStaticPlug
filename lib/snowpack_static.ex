@@ -51,18 +51,13 @@ defmodule SnowpackStatic.Plug do
   end
 
   #  req_headers: req_headers
-  defp serve_asset(conn = %Plug.Conn{path_info: [uri | path_parts]}, port, assets) do
-    requested_path = "#{uri}/#{Enum.join(path_parts, "/")}"
+  defp serve_asset(conn = %Plug.Conn{path_info: [asset_type | path_parts]}, port, assets) do
+    requested_path = Enum.join([asset_type | path_parts], "/")
 
     url =
       "http://localhost:#{port}"
       |> URI.merge(requested_path)
       |> URI.to_string()
-
-    asset_type =
-      uri
-      |> String.split("/")
-      |> hd
 
     if Enum.any?(assets, &(&1 == asset_type)) do
       # require Logger
